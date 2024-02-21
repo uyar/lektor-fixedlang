@@ -31,7 +31,8 @@ class FixedLangPlugin(Plugin):
             filename = artifact.dst_filename
             if filename in self.processed:
                 return
-            content = Path(filename).read_text()
+            dst_file = Path(filename)
+            content = dst_file.read_text()
             modified = False
             for pattern, lang_tag in self.patterns.items():
                 if re.search(pattern, content, flags=re.IGNORECASE):
@@ -43,5 +44,5 @@ class FixedLangPlugin(Plugin):
                     )
                     modified = True
             if modified:
-                Path(filename).write_text(content)
+                dst_file.write_text(content)
             self.processed.add(filename)
