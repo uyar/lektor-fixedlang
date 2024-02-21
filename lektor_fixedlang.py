@@ -4,11 +4,11 @@
 # Read the included LICENSE.txt file for details.
 
 import re
+from collections import defaultdict
 from pathlib import Path
 
 from lektor.db import Page
 from lektor.pluginsystem import Plugin
-from lektor.reporter import reporter
 
 
 class FixedLangPlugin(Plugin):
@@ -16,9 +16,11 @@ class FixedLangPlugin(Plugin):
     description = "Set fixed language for specific patterns."
 
     def on_setup_env(self, **extra):
-        reporter.report_generic("Starting fixedlang processing")
         config = self.get_config()
-        self.patterns = config.section_as_dict("default")
+        self.patterns = defaultdict(dict)
+        for tag in config.sections():
+            for pattern, lang in config.section_as_dict(tag).items():
+                self.patterns[pattern].update({"lang": lang, "tag": tag})
         self.processed = set()
 
     def on_after_build(self, builder, build_state, source, prog, **extra):
@@ -31,13 +33,15 @@ class FixedLangPlugin(Plugin):
                 return
             content = Path(filename).read_text()
             modified = False
-            for pattern, lang in self.patterns.items():
+            for pattern, lang_tag in self.patterns.items():
                 if re.search(pattern, content, flags=re.IGNORECASE):
-                    content = re.sub(f'({pattern})',
-                                     f'<span lang="{lang}">\\1</span>',
-                                     content,
-                                     flags=re.IGNORECASE)
+                    content = re.sub(
+                        f'({pattern})',
+                        '<%(tag)s lang="%(lang)s">\\1</%(tag)s>' % lang_tag,
+                        content,
+                        flags=re.IGNORECASE,
+                    )
                     modified = True
             if modified:
                 Path(filename).write_text(content)
-                self.processed.add(filename)
+            self.processed.add(filename)
