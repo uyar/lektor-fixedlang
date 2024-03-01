@@ -3,6 +3,8 @@
 # lektor-fixedlang is released under the BSD license.
 # Read the included LICENSE.txt file for details.
 
+__version__ = "0.2"
+
 import re
 from collections import defaultdict
 from pathlib import Path

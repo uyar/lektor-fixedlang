@@ -1,0 +1,11 @@
+[project]
+name = Project
+output_path = _build
+
+[alternatives.en]
+locale = en_US
+primary = yes
+
+[alternatives.tr]
+locale = tr_TR
+url_prefix = /tr/

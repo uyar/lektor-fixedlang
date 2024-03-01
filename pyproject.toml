@@ -1,6 +1,6 @@
 [project]
 name = "lektor-fixedlang"
-version = "0.1"
+version = "0.2"
 description = "Set fixed languages for patterns in Lektor."
 readme = "README.rst"
 
@@ -26,9 +26,10 @@ requires-python = "~=3.8"
 dependencies = ["lektor"]
 
 [project.optional-dependencies]
+tests = ["pytest"]
 style = ["ruff"]
 dev = [
-    "lektor-fixedlang[style]",
+    "lektor-fixedlang[tests,style]",
     "build",
     "twine",
     "tox",
@@ -40,11 +41,17 @@ fixedlang = "lektor_fixedlang:FixedLangPlugin"
 [project.urls]
 repository = "https://github.com/uyar/lektor-fixedlang"
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
 [tool.ruff]
 line-length = 79
 
 [tool.ruff.lint]
 select = ["A", "E", "F", "I", "T", "W"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E501"]
 
 [tool.ruff.lint.isort]
 lines-after-imports = 2
@@ -52,15 +59,22 @@ lines-after-imports = 2
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = style
+envlist = py3{8,9,10,11,12}, style
 isolated_build = True
+
+[testenv]
+extras = tests
+package = wheel
+wheel_build_env = .pkg
+commands =
+    pytest
 
 [testenv:style]
 skip_install = true
 deps =
     ruff
 commands =
-    ruff check --preview lektor_fixedlang.py
+    ruff check --preview lektor_fixedlang.py tests
 
 [testenv:package]
 skip_install = true
