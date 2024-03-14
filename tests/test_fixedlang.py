@@ -39,18 +39,18 @@ def test_installed_version_should_match_tested_version():
 
 
 def test_matched_pattern_should_be_wrapped_in_given_tag():
-    config = "[span]\nizmir = tr\n"
+    config = "[span]\nJive = en\n"
     FIXEDLANG_CONFIG_FILE.write_text(config)
-    content = "title: Test\n---\nbody: izmir\n"
+    content = "title: Test\n---\nbody: Jive\n"
     LEKTOR_CONTENT_INDEX.write_text(content)
     subprocess.run(["lektor", "build"])
-    assert '<span lang="tr">izmir</span>' in LEKTOR_BUILD_INDEX.read_text()
+    assert '<span lang="en">Jive</span>' in LEKTOR_BUILD_INDEX.read_text()
 
 
-def test_matching_should_be_case_insensitive():
-    config = "[span]\nizmir = tr\n"
+def test_matching_should_be_case_sensitive():
+    config = "[span]\nJive = en\n"
     FIXEDLANG_CONFIG_FILE.write_text(config)
-    content = "title: Test\n---\nbody: İzmir\n"
+    content = "title: Test\n---\nbody: jive\n"
     LEKTOR_CONTENT_INDEX.write_text(content)
     subprocess.run(["lektor", "build"])
-    assert '<span lang="tr">İzmir</span>' in LEKTOR_BUILD_INDEX.read_text()
+    assert '<span lang="en">' not in LEKTOR_BUILD_INDEX.read_text()

@@ -42,7 +42,6 @@ class FixedLangPlugin(Plugin):
                         f'({pattern})',
                         '<%(tag)s lang="%(lang)s">\\1</%(tag)s>' % lang_tag,
                         content,
-                        flags=re.IGNORECASE,
                     )
                     modified = True
             if modified:

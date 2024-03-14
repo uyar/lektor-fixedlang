@@ -1,27 +1,29 @@
 lektor-fixedlang
 ================
 
-lektor-fixedlang is a plugin for the `Lektor <https://www.getlektor.com>`_
-static site generator that marks some patterns in output files
-with ``lang`` attributes.
+lektor-fixedlang is a plugin for the `Lektor`_ static site generator
+that marks some patterns in output files with ``lang`` attributes.
 
 Why?
 ----
 
-Say you have a multilingual site where one of the languages you support
-is Turkish. In Turkish, the uppercase form for ``i`` is ``İ``,
-and the lowercase form for ``I`` is ``ı``. If you use an English word
-containing these letters in Turkish text, a ``text-transform`` CSS rule
-will cause the word to be shown incorrectly. For example, the word
-"Wikipedia" transformed to uppercase will become "WİKİPEDİA".
+It might be the case that a document contains words or phrases
+that are in a language other than the current document's language.
+If not marked properly, these parts will be processed
+using an incorrect language's rules
+(such as for case conversion and hyphenation),
+and screen readers will pronounce them aloud incorrectly.
+For example, in Turkish, the uppercase form for ``i`` is ``İ``,
+and the lowercase form for ``I`` is ``ı``.
+If you use the word "Wikipedia" in Turkish text,
+a ``text-transform: uppercase`` CSS rule will cause it
+to be displayed as "WİKİPEDİA".
 
-To prevent this, you have to mark such pieces of text using a ``lang``
-attribute, as in ``<span lang="en">Wikipedia</span>``. This can of course
-be done manually when writing the content, but that's going to be inconvenient
-for content writers and it can also be easily overlooked.
-
-Although this "dotless-i / dotted-I" problem was the initial motivation
-behind this plugin, it can be useful in other cases as well.
+To prevent this, such pieces of text have to be marked using a ``lang``
+attribute, as in ``<span lang="en">Wikipedia</span>``.
+This can of course be done manually when writing the content,
+but that's going to be inconvenient for content writers,
+and it can also be easily overlooked.
 
 Installation
 ------------
@@ -40,4 +42,4 @@ Example::
   [span]
   \bWikipedia\b = en
 
-*Note*: At the moment, regular expression matches are case insensitive.
+.. _Lektor: https://www.getlektor.com/
