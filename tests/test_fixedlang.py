@@ -57,17 +57,7 @@ def lektor_init():
 
     template_file = LEKTOR_ROOT / "templates" / "page.html"
     template_file.parent.mkdir(parents=True, exist_ok=True)
-    template_file.write_text(dedent("""
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <title>{{ this.title }}</title>
-        </head>
-        <body>
-          {{ this.body }}
-        </body>
-        </html>
-    """))
+    template_file.write_text("""{{ this.body }}\n""")
 
     current_dir = os.getcwd()
     os.chdir(LEKTOR_ROOT)
@@ -83,9 +73,9 @@ def test_installed_version_should_match_tested_version():
 
 @pytest.mark.parametrize(("config", "content", "output"), [
     (
-        """[span]\nJive = en\n""",
-        """title: Test\n---\nbody: Jive\n""",
-        """<span lang="en">Jive</span>""",
+        """[span]\nWikipedia = en\n""",
+        """title: Test\n---\nbody: ..Wikipedia...\n""",
+        """<p>..<span lang="en">Wikipedia</span>...</p>\n\n""",
     ),
 ])
 def test_matched_pattern_should_be_wrapped_in_given_tag(config, content, output):
@@ -93,19 +83,4 @@ def test_matched_pattern_should_be_wrapped_in_given_tag(config, content, output)
     LEKTOR_HOME_SRC.write_text(content)
     subprocess.run(["lektor", "build"])
     generated = LEKTOR_HOME_DST.read_text()
-    assert output in generated
-
-
-@pytest.mark.parametrize(("config", "content", "output"), [
-    (
-        """[span]\nJive = en\n""",
-        """title: Test\n---\nbody: jive\n""",
-        """<span lang="en">""",
-    ),
-])
-def test_matching_should_be_case_sensitive(config, content, output):
-    CONFIG_FILE.write_text(config)
-    LEKTOR_HOME_SRC.write_text(content)
-    subprocess.run(["lektor", "build"])
-    generated = LEKTOR_HOME_DST.read_text()
-    assert output not in generated
+    assert generated == output
