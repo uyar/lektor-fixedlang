@@ -11,6 +11,7 @@ from pathlib import Path
 
 from lektor.db import Page
 from lektor.pluginsystem import Plugin
+from lektor.reporter import reporter
 
 
 class FixedLangPlugin(Plugin):
@@ -24,6 +25,9 @@ class FixedLangPlugin(Plugin):
             for pattern, lang in config.section_as_dict(tag).items():
                 self.patterns[pattern].update({"lang": lang, "tag": tag})
         self.processed = set()
+
+    def on_before_build_all(self, builder, **extra):
+        reporter.report_generic("Starting setting fixed languages")
 
     def on_after_build(self, builder, build_state, source, prog, **extra):
         if isinstance(source, Page):
@@ -47,3 +51,6 @@ class FixedLangPlugin(Plugin):
             if modified:
                 dst_file.write_text(content)
             self.processed.add(filename)
+
+    def on_after_build_all(self, builder, **extra):
+        reporter.report_generic("Finished setting fixed languages")
