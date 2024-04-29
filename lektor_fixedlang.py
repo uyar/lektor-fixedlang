@@ -8,6 +8,7 @@ __version__ = "0.2"
 import re
 from pathlib import Path
 
+from bs4 import BeautifulSoup
 from lektor.db import Page
 from lektor.pluginsystem import Plugin
 from lektor.reporter import reporter
@@ -19,10 +20,10 @@ class FixedLangPlugin(Plugin):
 
     def on_setup_env(self, **extra):
         config = self.get_config()
-        self.patterns = {}
+        self.patterns = []
         for tag in config.sections():
             for pattern, lang in config.section_as_dict(tag).items():
-                self.patterns[pattern] = (lang, tag)
+                self.patterns.append((re.compile(f'({pattern})'), lang, tag))
         self.processed = set()
 
     def on_before_build_all(self, builder, **extra):
@@ -40,16 +41,18 @@ class FixedLangPlugin(Plugin):
         dst_file = Path(filename)
         content = dst_file.read_text()
         modified = False
-        for pattern, (lang, tag) in self.patterns.items():
-            if re.search(pattern, content, flags=re.IGNORECASE):
-                content = re.sub(
-                    f'({pattern})',
+        soup = BeautifulSoup(content, "html.parser")
+        for (compiled, lang, tag) in self.patterns:
+            for node in soup.find_all(string=compiled):
+                markup = compiled.sub(
                     f'<{tag} lang="{lang}">\\1</{tag}>',
-                    content,
+                    node.string,
                 )
+                subsoup = BeautifulSoup(markup, "html.parser")
+                node.replace_with(subsoup)
                 modified = True
         if modified:
-            dst_file.write_text(content)
+            dst_file.write_text(str(soup))
         self.processed.add(filename)
 
     def on_after_build_all(self, builder, **extra):

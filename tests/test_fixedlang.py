@@ -75,7 +75,7 @@ def test_installed_version_should_match_tested_version():
     (
         """[span]\nWikipedia = en\n""",
         """title: Test\n---\nbody: ..Wikipedia...\n""",
-        """<p>..<span lang="en">Wikipedia</span>...</p>\n\n""",
+        """<p>..<span lang="en">Wikipedia</span>...</p>\n""",
     ),
 ])
 def test_matched_pattern_should_be_wrapped_in_given_tag(config, content, output):
