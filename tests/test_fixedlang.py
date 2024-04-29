@@ -2,29 +2,72 @@ import os
 import subprocess
 from importlib import metadata
 from pathlib import Path
-from shutil import copytree, rmtree
+from shutil import rmtree
+from textwrap import dedent
 
-from pytest import fixture
+import pytest
 
 import lektor_fixedlang
 
 
-LEKTOR_SRC_ROOT = Path(__file__).parent / "project"
 LEKTOR_ROOT = Path("/dev/shm/lektor-fixedlang")
-LEKTOR_CONTENT_ROOT = LEKTOR_ROOT / "content"
-LEKTOR_BUILD_ROOT = LEKTOR_ROOT / "_build"
-LEKTOR_CONTENT_INDEX = LEKTOR_CONTENT_ROOT / "contents.lr"
-LEKTOR_BUILD_INDEX = LEKTOR_BUILD_ROOT / "index.html"
-LEKTOR_CONFIG_DIR = LEKTOR_ROOT / "configs"
-FIXEDLANG_CONFIG_FILE = LEKTOR_CONFIG_DIR / "fixedlang.ini"
+LEKTOR_HOME_SRC = LEKTOR_ROOT / "content" / "contents.lr"
+LEKTOR_HOME_DST = LEKTOR_ROOT / "_build" / "index.html"
+CONFIG_FILE = LEKTOR_ROOT / "configs" / "fixedlang.ini"
 
 
-@fixture(autouse=True)
+@pytest.fixture(autouse=True)
 def lektor_init():
     rmtree(LEKTOR_ROOT, ignore_errors=True)
-    copytree(LEKTOR_SRC_ROOT, LEKTOR_ROOT)
+    LEKTOR_HOME_SRC.parent.mkdir(parents=True, exist_ok=True)
+    LEKTOR_HOME_DST.parent.mkdir(parents=True, exist_ok=True)
+    CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
 
-    LEKTOR_CONFIG_DIR.mkdir()
+    project_file = LEKTOR_ROOT / "project.lektorproject"
+    project_file.parent.mkdir(parents=True, exist_ok=True)
+    project_file.write_text(dedent("""
+        [project]
+        name = Project
+        output_path = _build
+
+        [alternatives.en]
+        locale = en_US
+        primary = yes
+
+        [alternatives.tr]
+        locale = tr_TR
+        url_prefix = /tr/
+    """))
+
+    model_file = LEKTOR_ROOT / "models" / "page.ini"
+    model_file.parent.mkdir(parents=True, exist_ok=True)
+    model_file.write_text(dedent("""
+        [model]
+        name = Page
+        label = {{ this.title }}
+
+        [fields.title]
+        label = Title
+        type = string
+
+        [fields.body]
+        label = Body
+        type = markdown
+    """))
+
+    template_file = LEKTOR_ROOT / "templates" / "page.html"
+    template_file.parent.mkdir(parents=True, exist_ok=True)
+    template_file.write_text(dedent("""
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>{{ this.title }}</title>
+        </head>
+        <body>
+          {{ this.body }}
+        </body>
+        </html>
+    """))
 
     current_dir = os.getcwd()
     os.chdir(LEKTOR_ROOT)
@@ -38,19 +81,31 @@ def test_installed_version_should_match_tested_version():
     assert metadata.version("lektor_fixedlang") == lektor_fixedlang.__version__
 
 
-def test_matched_pattern_should_be_wrapped_in_given_tag():
-    config = "[span]\nJive = en\n"
-    FIXEDLANG_CONFIG_FILE.write_text(config)
-    content = "title: Test\n---\nbody: Jive\n"
-    LEKTOR_CONTENT_INDEX.write_text(content)
+@pytest.mark.parametrize(("config", "content", "output"), [
+    (
+        """[span]\nJive = en\n""",
+        """title: Test\n---\nbody: Jive\n""",
+        """<span lang="en">Jive</span>""",
+    ),
+])
+def test_matched_pattern_should_be_wrapped_in_given_tag(config, content, output):
+    CONFIG_FILE.write_text(config)
+    LEKTOR_HOME_SRC.write_text(content)
     subprocess.run(["lektor", "build"])
-    assert '<span lang="en">Jive</span>' in LEKTOR_BUILD_INDEX.read_text()
+    generated = LEKTOR_HOME_DST.read_text()
+    assert output in generated
 
 
-def test_matching_should_be_case_sensitive():
-    config = "[span]\nJive = en\n"
-    FIXEDLANG_CONFIG_FILE.write_text(config)
-    content = "title: Test\n---\nbody: jive\n"
-    LEKTOR_CONTENT_INDEX.write_text(content)
+@pytest.mark.parametrize(("config", "content", "output"), [
+    (
+        """[span]\nJive = en\n""",
+        """title: Test\n---\nbody: jive\n""",
+        """<span lang="en">""",
+    ),
+])
+def test_matching_should_be_case_sensitive(config, content, output):
+    CONFIG_FILE.write_text(config)
+    LEKTOR_HOME_SRC.write_text(content)
     subprocess.run(["lektor", "build"])
-    assert '<span lang="en">' not in LEKTOR_BUILD_INDEX.read_text()
+    generated = LEKTOR_HOME_DST.read_text()
+    assert output not in generated
