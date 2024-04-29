@@ -33,13 +33,12 @@ To use the plugin, add it to your project::
   lektor plugin add lektor-fixedlang
 
 The plugin can be configured using the ``configs/fixedlang.ini`` file.
-Every section is the name of the tag that will wrap the pattern.
-Every key in the section is a regular expression pattern
-and the value is the language for the pattern.
+Every section is the language code of the patterns in that section.
+Keys are insignificant except that they have to be unique in their sections.
 
 Example::
 
-  [span]
-  \bWikipedia\b = en
+  [en]
+  1 = Wikipedia
 
 .. _Lektor: https://www.getlektor.com/

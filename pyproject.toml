@@ -1,6 +1,6 @@
 [project]
 name = "lektor-fixedlang"
-version = "0.3"
+version = "0.4"
 description = "Set fixed languages for patterns in Lektor."
 readme = "README.rst"
 
@@ -24,7 +24,7 @@ classifiers = [
 ]
 
 requires-python = "~=3.8"
-dependencies = ["lektor", "beautifulsoup4"]
+dependencies = ["lektor", "lxml"]
 
 [project.optional-dependencies]
 tests = ["pytest", "pytest-cov"]

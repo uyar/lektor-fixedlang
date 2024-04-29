@@ -29,14 +29,6 @@ def lektor_init():
         [project]
         name = Project
         output_path = _build
-
-        [alternatives.en]
-        locale = en_US
-        primary = yes
-
-        [alternatives.tr]
-        locale = tr_TR
-        url_prefix = /tr/
     """))
 
     model_file = LEKTOR_ROOT / "models" / "page.ini"
@@ -45,10 +37,6 @@ def lektor_init():
         [model]
         name = Page
         label = {{ this.title }}
-
-        [fields.title]
-        label = Title
-        type = string
 
         [fields.body]
         label = Body
@@ -73,8 +61,8 @@ def test_installed_version_should_match_tested_version():
 
 @pytest.mark.parametrize(("config", "content", "output"), [
     (
-        """[span]\nWikipedia = en\n""",
-        """title: Test\n---\nbody: <p>..Wikipedia...</p>\n""",
+        """[en]\n1 = Wikipedia\n""",
+        """body: <p>..Wikipedia...</p>\n""",
         """<p>..<span lang="en">Wikipedia</span>...</p>\n""",
     ),
 ])
@@ -88,17 +76,17 @@ def test_matched_pattern_should_be_wrapped_in_given_tag(config, content, output)
 
 @pytest.mark.parametrize(("config", "content", "output"), [
     (
-        """[span]\nWikipedia = en\n""",
-        """title: Test\n---\nbody: <p lang="en">..Wikipedia...</p>\n""",
+        """[en]\n1 = Wikipedia\n""",
+        """body: <p lang="en">..Wikipedia...</p>\n""",
         """<p lang="en">..Wikipedia...</p>\n""",
     ),
     (
-        """[span]\nWikipedia = en\n""",
+        """[en]\n1 = Wikipedia\n""",
         """title: Test\n---\nbody: <div lang="en">..<p>Wikipedia</p>...</div>\n""",
         """<div lang="en">..<p>Wikipedia</p>...</div>\n""",
     ),
     (
-        """[span]\nWikipedia = en\n""",
+        """[en]\n1 = Wikipedia\n""",
         """title: Test\n---\nbody: <div lang="en"><p lang="tr">..Wikipedia...</p></div>\n""",
         """<div lang="en"><p lang="tr">..<span lang="en">Wikipedia</span>...</p></div>\n""",
     ),
