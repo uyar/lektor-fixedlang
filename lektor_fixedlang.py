@@ -3,7 +3,7 @@
 # lektor-fixedlang is released under the BSD license.
 # Read the included LICENSE.txt file for details.
 
-__version__ = "0.2"
+__version__ = "0.3"
 
 import re
 from pathlib import Path
@@ -12,6 +12,15 @@ from bs4 import BeautifulSoup
 from lektor.db import Page
 from lektor.pluginsystem import Plugin
 from lektor.reporter import reporter
+
+
+def inherited_lang(node):
+    lang = None
+    for parent in node.parents:
+        lang = parent.attrs.get("lang")
+        if lang is not None:
+            break
+    return lang
 
 
 class FixedLangPlugin(Plugin):
@@ -44,6 +53,8 @@ class FixedLangPlugin(Plugin):
         soup = BeautifulSoup(content, "html.parser")
         for (compiled, lang, tag) in self.patterns:
             for node in soup.find_all(string=compiled):
+                if lang == inherited_lang(node):
+                    continue
                 markup = compiled.sub(
                     f'<{tag} lang="{lang}">\\1</{tag}>',
                     node.string,
