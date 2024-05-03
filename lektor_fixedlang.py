@@ -3,7 +3,7 @@
 # lektor-fixedlang is released under the BSD license.
 # Read the included LICENSE.txt file for details.
 
-__version__ = "0.4"
+__version__ = "0.5"
 
 import re
 from functools import partial
@@ -41,7 +41,6 @@ class FixedLangPlugin(Plugin):
         for lang in config.sections():
             for _, pattern in config.section_as_dict(lang).items():
                 self.patterns.append((pattern, lang))
-        self.processed = set()
 
     def on_before_build_all(self, builder, **extra):
         reporter.report_generic("Starting setting fixed languages")
@@ -50,12 +49,9 @@ class FixedLangPlugin(Plugin):
         if not isinstance(source, Page):
             return
         artifact = prog.primary_artifact
-        if artifact is None:
+        if (artifact is None) or (not artifact.updated):
             return
-        filename = artifact.dst_filename
-        if filename in self.processed:
-            return
-        dst_file = Path(filename)
+        dst_file = Path(artifact.dst_filename)
         content = dst_file.read_text()
         tree = from_html(content)
         modified = False
@@ -80,7 +76,6 @@ class FixedLangPlugin(Plugin):
                 modified = True
         if modified:
             dst_file.write_text(to_html(tree))
-        self.processed.add(filename)
 
     def on_after_build_all(self, builder, **extra):
         reporter.report_generic("Finished setting fixed languages")

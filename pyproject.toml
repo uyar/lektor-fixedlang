@@ -1,6 +1,6 @@
 [project]
 name = "lektor-fixedlang"
-version = "0.4"
+version = "0.5"
 description = "Set fixed languages for patterns in Lektor."
 readme = "README.rst"
 

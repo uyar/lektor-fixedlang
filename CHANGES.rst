@@ -1,6 +1,11 @@
 Changes
 =======
 
+0.5 (2024-05-03)
+----------------
+
+- Don't process pages that haven't been updated.
+
 0.4 (2024-04-29)
 ----------------
 
