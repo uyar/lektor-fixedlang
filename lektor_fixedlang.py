@@ -36,14 +36,12 @@ class FixedLangPlugin(Plugin):
     description = "Set fixed language for specific patterns."
 
     def on_setup_env(self, **extra):
+        reporter.report_generic("Setting up fixed language patterns")
         config = self.get_config()
         self.patterns = []
         for lang in config.sections():
             for _, pattern in config.section_as_dict(lang).items():
                 self.patterns.append((pattern, lang))
-
-    def on_before_build_all(self, builder, **extra):
-        reporter.report_generic("Starting setting fixed languages")
 
     def on_after_build(self, builder, build_state, source, prog, **extra):
         if not isinstance(source, Page):
@@ -76,6 +74,3 @@ class FixedLangPlugin(Plugin):
                 modified = True
         if modified:
             dst_file.write_text(to_html(tree))
-
-    def on_after_build_all(self, builder, **extra):
-        reporter.report_generic("Finished setting fixed languages")
